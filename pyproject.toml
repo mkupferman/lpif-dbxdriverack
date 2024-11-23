@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lpif2dbxdriverack"
+version = "0.0.1"
+authors = [{ name = "Matt Kupferman", email = "matt@kupferman.net" }]
+maintainers = [{ name = "Matt Kupferman", email = "matt@kupferman.net" }]
+description = "Sends compatible Loudspeaker Processor Interchange Format (LPIF) file parameters to supported dbx DriveRack loudspeaker management systems"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE.txt" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: End Users/Desktop",
+    "Development Status :: 4 - Beta",
+]
+dependencies = ["dbxdriverack", "prompt_toolkit", "Click"]
+
+[tool.setuptools.package-data]
+"lpif2dbxdriverack" = ["py.typed"]
+
+[project.urls]
+Homepage = "https://github.com/mkupferman/lpif-dbxdriverack"
+
+[project.scripts]
+lpif2dbxdriverack = "lpif2dbxdriverack.lpif2dbxdriverack:lpif2dbxdriverack"
+
+[project.optional-dependencies]
+dev = ["black"]
+validate = ["mypy"]
