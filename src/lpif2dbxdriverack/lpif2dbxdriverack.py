@@ -42,6 +42,24 @@ import sys
     default=False,
 )
 @click.option(
+    "--crossover/--no-crossover",
+    is_flag=True,
+    help="Apply crossover filters, gain, and polarity settings",
+    default=True,
+)
+@click.option(
+    "--peq/--no-peq",
+    is_flag=True,
+    help="Apply parametric band-EQ settings",
+    default=True,
+)
+@click.option(
+    "--delay/--no-delay",
+    is_flag=True,
+    help="Apply alignment delay settings",
+    default=True,
+)
+@click.option(
     "--map-high",
     help="Map DriveRack high output to this LPIF block name without prompting",
 )
@@ -99,14 +117,17 @@ def lpif2dbxdriverack(**params: Any) -> None:
             with l2d.ProgressIndicator("Muting DriveRack"):
                 converter.preMute()
 
-        with l2d.ProgressIndicator("Applying crossover settings"):
-            converter.applyCrossOver()
+        if params["crossover"]:
+            with l2d.ProgressIndicator("Applying crossover settings"):
+                converter.applyCrossOver()
 
-        with l2d.ProgressIndicator("Applying parametric EQ settings"):
-            converter.applyPeq()
+        if params["peq"]:
+            with l2d.ProgressIndicator("Applying parametric EQ settings"):
+                converter.applyPeq()
 
-        with l2d.ProgressIndicator("Applying delay settings"):
-            converter.applyDelay()
+        if params["delay"]:
+            with l2d.ProgressIndicator("Applying delay settings"):
+                converter.applyDelay()
 
         if params["muted"]:
             with l2d.ProgressIndicator("Restoring DriveRack mute states"):

@@ -90,6 +90,16 @@ Usage: lpif2dbxdriverack [OPTIONS] LPIF_FILE
 * `-r`, `--reset-unmapped` - Normally, any bands that are not mapped to a
   DriveRack output will be left alone. This option will reset any unmapped
   bands to have no processing.
+* `--crossover/--no-crossover` - By default, the DriveRack crossover section
+  will be set to use the high-pass/low-pass filters plus any polarity and
+  gains specified in the LPIF blocks. Use `--no-crossover` to skip applying
+  these settings.
+* `--peq/--no-peq` - By default, the DriveRack parametric EQ sections will be
+  set to use the parametric and shelving filters specified in the LPIF blocks.
+  Use `--no-peq` to skip applying these settings.
+* `--delay/--no-delay` - By default, the DriveRack delay sections will be set
+  to use the delays specified in the LPIF blocks. Use `--no-delay` to skip
+  applying these settings.
 * `--map-high`, `--map-mid`, `--map-low` - Normally, an interactive prompt
   will ask you to map each DriveRack output to an LPIF block. If you know in
   advance what the name of the LPIF block is, you can use these options to
