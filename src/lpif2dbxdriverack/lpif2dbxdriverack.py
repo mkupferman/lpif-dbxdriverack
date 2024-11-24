@@ -29,11 +29,10 @@ import sys
     help="Seconds to scan for DriveRack PA2 devices",
 )
 @click.option(
-    "--while-muted",
-    "-m",
+    "--muted/--no-muted",
     is_flag=True,
     help="Apply settings while muted. Restores previous mute states after",
-    default=False,
+    default=True,
 )
 @click.option(
     "--reset-unmapped",
@@ -96,7 +95,7 @@ def lpif2dbxdriverack(**params: Any) -> None:
         with l2d.ProgressIndicator("Converting LPIF parameters"):
             converter.convert(resetUnmapped=resetUnmapped)
 
-        if params["while_muted"]:
+        if params["muted"]:
             with l2d.ProgressIndicator("Muting DriveRack"):
                 converter.preMute()
 
@@ -109,6 +108,6 @@ def lpif2dbxdriverack(**params: Any) -> None:
         with l2d.ProgressIndicator("Applying delay settings"):
             converter.applyDelay()
 
-        if params["while_muted"]:
+        if params["muted"]:
             with l2d.ProgressIndicator("Restoring DriveRack mute states"):
                 converter.postUnmute()
