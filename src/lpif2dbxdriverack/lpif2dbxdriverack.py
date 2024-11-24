@@ -29,17 +29,40 @@ import sys
     help="Seconds to scan for DriveRack PA2 devices",
 )
 @click.option(
-    "--while-muted",
-    "-m",
+    "--muted/--no-muted",
     is_flag=True,
     help="Apply settings while muted. Restores previous mute states after",
-    default=False,
+    default=True,
 )
 @click.option(
     "--reset-unmapped",
     "-r",
     is_flag=True,
     help="Reset unmapped bands to have no processing",
+    default=False,
+)
+@click.option(
+    "--crossover/--no-crossover",
+    is_flag=True,
+    help="Apply crossover filters, gain, and polarity settings",
+    default=True,
+)
+@click.option(
+    "--peq/--no-peq",
+    is_flag=True,
+    help="Apply parametric band-EQ settings",
+    default=True,
+)
+@click.option(
+    "--delay/--no-delay",
+    is_flag=True,
+    help="Apply alignment delay settings",
+    default=True,
+)
+@click.option(
+    "--room-eq",
+    is_flag=True,
+    help="Apply a single LPIF block to the AutoEQ PEQ. Implies --no-crossover, --no-peq, and --no-delay",
     default=False,
 )
 @click.option(
@@ -53,6 +76,10 @@ import sys
 @click.option(
     "--map-low",
     help="Map DriveRack low output to this LPIF block name without prompting",
+)
+@click.option(
+    "--map-room",
+    help="Map DriveRack AutoEQ to this LPIF block name without prompting. Used with --room-eq",
 )
 def lpif2dbxdriverack(**params: Any) -> None:
     """
@@ -76,39 +103,62 @@ def lpif2dbxdriverack(**params: Any) -> None:
             sys.exit("Aborting")
         drack.connect(address)
 
-        highMap = None
-        midMap = None
-        lowMap = None
-        if params["map_high"]:
-            highMap = params["map_high"]
-        if params["map_mid"]:
-            midMap = params["map_mid"]
-        if params["map_low"]:
-            lowMap = params["map_low"]
+        if params["room_eq"]:
+            roomMap = None
+            if params["map_room"]:
+                roomMap = params["map_room"]
+            converter.mapRoomEq(roomMap)
 
-        if params["reset_unmapped"]:
-            resetUnmapped = True
+            with l2d.ProgressIndicator("Converting LPIF parameters"):
+                converter.convert()
+
+            if params["muted"]:
+                with l2d.ProgressIndicator("Muting DriveRack"):
+                    converter.preMute()
+
+            with l2d.ProgressIndicator("Applying AutoEQ manual EQ"):
+                converter.applyRoomEq()
+
+            if params["muted"]:
+                with l2d.ProgressIndicator("Restoring DriveRack mute states"):
+                    converter.postUnmute()
         else:
-            resetUnmapped = False
+            highMap = None
+            midMap = None
+            lowMap = None
+            if params["map_high"]:
+                highMap = params["map_high"]
+            if params["map_mid"]:
+                midMap = params["map_mid"]
+            if params["map_low"]:
+                lowMap = params["map_low"]
 
-        converter.mapBands(high=highMap, mid=midMap, low=lowMap)
+            if params["reset_unmapped"]:
+                resetUnmapped = True
+            else:
+                resetUnmapped = False
 
-        with l2d.ProgressIndicator("Converting LPIF parameters"):
-            converter.convert(resetUnmapped=resetUnmapped)
+            converter.mapBands(high=highMap, mid=midMap, low=lowMap)
 
-        if params["while_muted"]:
-            with l2d.ProgressIndicator("Muting DriveRack"):
-                converter.preMute()
+            with l2d.ProgressIndicator("Converting LPIF parameters"):
+                converter.convert(resetUnmapped=resetUnmapped)
 
-        with l2d.ProgressIndicator("Applying crossover settings"):
-            converter.applyCrossOver()
+            if params["muted"]:
+                with l2d.ProgressIndicator("Muting DriveRack"):
+                    converter.preMute()
 
-        with l2d.ProgressIndicator("Applying parametric EQ settings"):
-            converter.applyPeq()
+            if params["crossover"]:
+                with l2d.ProgressIndicator("Applying crossover settings"):
+                    converter.applyCrossOver()
 
-        with l2d.ProgressIndicator("Applying delay settings"):
-            converter.applyDelay()
+            if params["peq"]:
+                with l2d.ProgressIndicator("Applying parametric EQ settings"):
+                    converter.applyPeq()
 
-        if params["while_muted"]:
-            with l2d.ProgressIndicator("Restoring DriveRack mute states"):
-                converter.postUnmute()
+            if params["delay"]:
+                with l2d.ProgressIndicator("Applying delay settings"):
+                    converter.applyDelay()
+
+            if params["muted"]:
+                with l2d.ProgressIndicator("Restoring DriveRack mute states"):
+                    converter.postUnmute()

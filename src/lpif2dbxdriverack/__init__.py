@@ -15,6 +15,7 @@ import dbxdriverack.pa2.outputband as ob
 import dbxdriverack.pa2.crossover as xo
 import dbxdriverack.pa2.peq as peq
 import dbxdriverack.pa2.outputdelay as odly
+import dbxdriverack.pa2.autoeq as aeq
 
 
 class ProgressIndicator:
@@ -84,6 +85,13 @@ class LpifConverterPa2:
         self.crossover = xo.PA2Crossover()
         self.bandMap: dict[str, lpif.LpifProcessingBlock] = {}
 
+    def _hasRoomEq(self) -> bool:
+        try:
+            self.roomEqMapping
+        except:
+            return False
+        return True
+
     def _listAvailableBands(self) -> list[str]:
         bands = [ob.BandHigh]
         if self.drack.hasMids():
@@ -114,6 +122,9 @@ class LpifConverterPa2:
         return True
 
     def _mapXoverFilter(self, filter: lpif.LpifCrossover) -> str:
+        if self._hasRoomEq():
+            raise ValueError("Room EQ mode. Crossover filters are not supported")
+
         if filter.type in [lpif.XoverLpBw, lpif.XoverHpBw]:
             if filter.order == 1:
                 return xo.XoverBW6
@@ -170,6 +181,42 @@ class LpifConverterPa2:
 
         return device
 
+    def mapRoomEq(
+        self,
+        room: Optional[str] = None,
+    ) -> lpif.LpifProcessingBlock:
+        """
+        Map the DriveRack's Room EQ processing to the LPIF processing block.
+        """
+
+        unmappedBlocks = [block for block in self.lpifData.processingBlocks.keys()]
+
+        if room is not None and room in unmappedBlocks:
+            self.roomEqMapping = self.lpifData.processingBlocks[room]
+            return self.lpifData.processingBlocks[room]
+
+        if len(unmappedBlocks) == 0:
+            raise ValueError("No LPIF blocks available for mapping")
+        elif len(unmappedBlocks) == 1:
+            self.roomEqMapping = self.lpifData.processingBlocks[unmappedBlocks[0]]
+            return self.roomEqMapping
+        else:
+            blockName = radiolist_dialog(
+                title=f"Map Room EQ",
+                text=f"Map '{self.drack.getName()}' DriveRack Room EQ to:",
+                values=[(False, "(No room EQ processing)")]
+                + [
+                    (v, f"'{v}' LPIF block")
+                    for v in self.lpifData.processingBlocks.keys()
+                ],
+            ).run()
+
+            if isinstance(blockName, str):
+                self.roomEqMapping: lpif.LpifProcessingBlock = (
+                    self.lpifData.processingBlocks[blockName]
+                )
+                return self.roomEqMapping
+
     def mapBands(
         self,
         high: Optional[str] = None,
@@ -180,6 +227,9 @@ class LpifConverterPa2:
         Map the DriveRack bands (e.g. High, Mid, Low) to the LPIF processing blocks.
         LPIF blocks represent a band's processing, including EQ, delay, and multiple filters.
         """
+        if self._hasRoomEq():
+            raise ValueError("Room EQ mode. High/Mid/Low mapping is not supported")
+
         unmappedBlocks = [block for block in self.lpifData.processingBlocks.keys()]
 
         if high is not None and high in unmappedBlocks:
@@ -217,6 +267,54 @@ class LpifConverterPa2:
         Parametric EQs and delays will be applied at the PA2 band level (H, M, L),
         while high and low-pass filters will be applied within the PA2's crossover block.
         """
+
+        if self._hasRoomEq():
+            block = self.roomEqMapping
+            # check if the number of LPIF block filters are within the limits of the PA2 AutoEQ
+            if len(block.iir) > aeq.FiltMaxCount:
+                raise ValueError(
+                    f"Block '{block.name}' has {len(block.iir)} filters. PA2 limit is {aeq.FiltMaxCount}"
+                )
+            if len(block.iir) > 0:
+                roomEq = aeq.PA2AutoEq(enabled=True)
+
+                # apply the block's EQ filters to the AutoEQ
+                i = 0
+                for eqFilter in block.iir:
+                    i += 1
+
+                    # determine the AutoEQ filter type
+                    if eqFilter.type == lpif.EqParametric:
+                        filterType = aeq.Bell
+                    elif eqFilter.type == lpif.EqHighShelf:
+                        filterType = aeq.HighShelf
+                    elif eqFilter.type == lpif.EqLowShelf:
+                        filterType = aeq.LowShelf
+                    else:
+                        raise ValueError(
+                            f"Block '{block.name}' has an unsupported filter type: {eqFilter.type}"
+                        )
+
+                    q = eqFilter.q
+
+                    # determine the Q/slope
+                    if eqFilter.type in [lpif.EqHighShelf, lpif.EqLowShelf]:
+                        slope = round(lpif.q2slope(q), 1)
+                        if not (aeq.ShelfMinSlope <= slope <= aeq.ShelfMaxSlope):
+                            raise ValueError(
+                                f"Block '{block.name}' shelf filter {i} (type={eqFilter.type}, gain={eqFilter.gain}, q={q} [slope={slope}]) is out of PA2's slope range"
+                            )
+                        q = slope
+
+                    roomEq.addFilter(
+                        aeq.PA2AutoEqFilter(
+                            filterType, eqFilter.frequency, eqFilter.gain, q
+                        ),
+                        i,
+                    )
+
+                self.drack.setAeq(roomEq, apply=False)
+                return
 
         for band, block in self.bandMap.items():
 
@@ -346,3 +444,6 @@ class LpifConverterPa2:
 
     def applyCrossOver(self) -> None:
         self.drack.applyCrossover()
+
+    def applyRoomEq(self) -> None:
+        self.drack.applyAeq()

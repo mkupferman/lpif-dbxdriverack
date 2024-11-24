@@ -75,7 +75,7 @@ class LpifProcessingBlock:
         self.iir: list[LpifPeq] = []
 
     def __str__(self) -> str:
-        return f"LPIF Block: {self.name} Gain: {self.gain} Delay: {self.delay} Invert: {self.invert}"
+        return f"LPIF Block: {self.name} Gain: {self.gain} Delay: {self.delay} Invert: {self.invert} #IIR: {len(self.iir)}"
 
 
 class Lpif:

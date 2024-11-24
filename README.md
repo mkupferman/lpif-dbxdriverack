@@ -83,16 +83,34 @@ Usage: lpif2dbxdriverack [OPTIONS] LPIF_FILE
   this is provided, the discovery feature is bypassed.
 * `--scan-time` - The number of seconds to wait for devices to respond after a
   discovery scan is initiated. The default is 5 seconds.
-* `-m`, `--while-muted` - This will temporarily mute the DriveRack outputs
+* `--muted/--no-muted` - By default, temporarily mute the DriveRack outputs
   while applying the settings, then restore the previous mute states after, to
-  potentially avoid unwanted noise during adjustment.
+  potentially avoid unwanted noise during adjustment. Use `--no-muted` to
+  disable this behavior.
 * `-r`, `--reset-unmapped` - Normally, any bands that are not mapped to a
   DriveRack output will be left alone. This option will reset any unmapped
   bands to have no processing.
+* `--crossover/--no-crossover` - By default, the DriveRack crossover section
+  will be set to use the high-pass/low-pass filters plus any polarity and
+  gains specified in the LPIF blocks. Use `--no-crossover` to skip applying
+  these settings.
+* `--peq/--no-peq` - By default, the DriveRack parametric EQ sections will be
+  set to use the parametric and shelving filters specified in the LPIF blocks.
+  Use `--no-peq` to skip applying these settings.
+* `--delay/--no-delay` - By default, the DriveRack delay sections will be set
+  to use the delays specified in the LPIF blocks. Use `--no-delay` to skip
+  applying these settings.
+* `--room-eq` - When specified, apply a single LPIF block to the AutoEQ PEQ
+  section of the DriveRack. No other processing will be applied. If only one
+  DSP block is present in the LPIF file, it will be chosen automatically
+  instead of prompting.
 * `--map-high`, `--map-mid`, `--map-low` - Normally, an interactive prompt
   will ask you to map each DriveRack output to an LPIF block. If you know in
   advance what the name of the LPIF block is, you can use these options to
   specify which DriveRack band should be mapped and bypass the prompt.
+* `--map-room` - When specified, the AutoEQ PEQ section will be mapped to the
+  LPIF block name specified, bypassing the prompt. Only utilized when
+  `--room-eq` is also specified.
 
 ## Contributing
 
