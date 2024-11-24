@@ -83,9 +83,10 @@ Usage: lpif2dbxdriverack [OPTIONS] LPIF_FILE
   this is provided, the discovery feature is bypassed.
 * `--scan-time` - The number of seconds to wait for devices to respond after a
   discovery scan is initiated. The default is 5 seconds.
-* `-m`, `--while-muted` - This will temporarily mute the DriveRack outputs
+* `--muted/--no-muted` - By default, temporarily mute the DriveRack outputs
   while applying the settings, then restore the previous mute states after, to
-  potentially avoid unwanted noise during adjustment.
+  potentially avoid unwanted noise during adjustment. Use `--no-muted` to
+  disable this behavior.
 * `-r`, `--reset-unmapped` - Normally, any bands that are not mapped to a
   DriveRack output will be left alone. This option will reset any unmapped
   bands to have no processing.
