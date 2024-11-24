@@ -192,14 +192,13 @@ class LpifConverterPa2:
         unmappedBlocks = [block for block in self.lpifData.processingBlocks.keys()]
 
         if room is not None and room in unmappedBlocks:
-            self.roomEqMapping = self.lpifData.processingBlocks[room]
-            return
-
-        if len(unmappedBlocks) == 0:
+            self.roomEqMapping: lpif.LpifProcessingBlock = (
+                self.lpifData.processingBlocks[room]
+            )
+        elif len(unmappedBlocks) == 0:
             raise ValueError("No LPIF blocks available for mapping")
         elif len(unmappedBlocks) == 1:
             self.roomEqMapping = self.lpifData.processingBlocks[unmappedBlocks[0]]
-            return
         else:
             blockName = radiolist_dialog(
                 title=f"Map Room EQ",
@@ -212,10 +211,7 @@ class LpifConverterPa2:
             ).run()
 
             if isinstance(blockName, str):
-                self.roomEqMapping: lpif.LpifProcessingBlock = (
-                    self.lpifData.processingBlocks[blockName]
-                )
-                return
+                self.roomEqMapping = self.lpifData.processingBlocks[blockName]
 
     def mapBands(
         self,
