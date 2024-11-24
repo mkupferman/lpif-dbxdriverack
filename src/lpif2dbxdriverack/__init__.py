@@ -184,7 +184,7 @@ class LpifConverterPa2:
     def mapRoomEq(
         self,
         room: Optional[str] = None,
-    ) -> lpif.LpifProcessingBlock:
+    ) -> None:
         """
         Map the DriveRack's Room EQ processing to the LPIF processing block.
         """
@@ -193,13 +193,13 @@ class LpifConverterPa2:
 
         if room is not None and room in unmappedBlocks:
             self.roomEqMapping = self.lpifData.processingBlocks[room]
-            return self.lpifData.processingBlocks[room]
+            return
 
         if len(unmappedBlocks) == 0:
             raise ValueError("No LPIF blocks available for mapping")
         elif len(unmappedBlocks) == 1:
             self.roomEqMapping = self.lpifData.processingBlocks[unmappedBlocks[0]]
-            return self.roomEqMapping
+            return
         else:
             blockName = radiolist_dialog(
                 title=f"Map Room EQ",
@@ -215,14 +215,14 @@ class LpifConverterPa2:
                 self.roomEqMapping: lpif.LpifProcessingBlock = (
                     self.lpifData.processingBlocks[blockName]
                 )
-                return self.roomEqMapping
+                return
 
     def mapBands(
         self,
         high: Optional[str] = None,
         mid: Optional[str] = None,
         low: Optional[str] = None,
-    ) -> dict[str, lpif.LpifProcessingBlock]:
+    ) -> None:
         """
         Map the DriveRack bands (e.g. High, Mid, Low) to the LPIF processing blocks.
         LPIF blocks represent a band's processing, including EQ, delay, and multiple filters.
@@ -258,8 +258,6 @@ class LpifConverterPa2:
             if isinstance(blockName, str):
                 self.bandMap[band] = self.lpifData.processingBlocks[blockName]
                 unmappedBlocks.remove(blockName)
-
-        return self.bandMap
 
     def convert(self, resetUnmapped: bool = False) -> None:
         """
