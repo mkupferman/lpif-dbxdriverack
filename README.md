@@ -100,10 +100,17 @@ Usage: lpif2dbxdriverack [OPTIONS] LPIF_FILE
 * `--delay/--no-delay` - By default, the DriveRack delay sections will be set
   to use the delays specified in the LPIF blocks. Use `--no-delay` to skip
   applying these settings.
+* `--room-eq` - When specified, apply a single LPIF block to the AutoEQ PEQ
+  section of the DriveRack. No other processing will be applied. If only one
+  DSP block is present in the LPIF file, it will be chosen automatically
+  instead of prompting.
 * `--map-high`, `--map-mid`, `--map-low` - Normally, an interactive prompt
   will ask you to map each DriveRack output to an LPIF block. If you know in
   advance what the name of the LPIF block is, you can use these options to
   specify which DriveRack band should be mapped and bypass the prompt.
+* `--map-room` - When specified, the AutoEQ PEQ section will be mapped to the
+  LPIF block name specified, bypassing the prompt. Only utilized when
+  `--room-eq` is also specified.
 
 ## Contributing
 
