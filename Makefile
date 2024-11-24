@@ -1,7 +1,7 @@
 all: build
 
 clean:
-	rm -rf ./dist/ ./*.egg-info ./__pycache__/ ./*/__pycache__/ ./venv/
+	rm -rf ./dist/ ./build/ ./*.egg-info ./__pycache__/ ./*/__pycache__/ ./venv/
 
 venv:
 	python3 -m venv venv
