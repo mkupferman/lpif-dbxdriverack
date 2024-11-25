@@ -173,11 +173,13 @@ class LpifConverterPa2:
         if len(devices) == 1 and useFirst:
             return deviceList[0][0]
 
+        self.drack.waitingForUser(True)
         device = radiolist_dialog(
             title="Choose a DriveRack",
             text="Connect to which DriveRack?",
             values=deviceList,
         ).run()
+        self.drack.waitingForUser(False)
 
         return device
 
@@ -200,6 +202,7 @@ class LpifConverterPa2:
         elif len(unmappedBlocks) == 1:
             self.roomEqMapping = self.lpifData.processingBlocks[unmappedBlocks[0]]
         else:
+            self.drack.waitingForUser(True)
             blockName = radiolist_dialog(
                 title=f"Map Room EQ",
                 text=f"Map '{self.drack.getName()}' DriveRack Room EQ to:",
@@ -209,6 +212,7 @@ class LpifConverterPa2:
                     for v in self.lpifData.processingBlocks.keys()
                 ],
             ).run()
+            self.drack.waitingForUser(False)
 
             if isinstance(blockName, str):
                 self.roomEqMapping = self.lpifData.processingBlocks[blockName]
@@ -244,12 +248,14 @@ class LpifConverterPa2:
             if self._allBandMapped() or len(unmappedBlocks) == 0:
                 break
 
+            self.drack.waitingForUser(True)
             blockName = radiolist_dialog(
                 title=f"Map Band: {band}",
                 text=f"Map '{self.drack.getName()}' DriveRack {band} band to:",
                 values=[(False, "(No band processing)")]
                 + [(v, f"'{v}' LPIF block") for v in unmappedBlocks],
             ).run()
+            self.drack.waitingForUser(False)
 
             if isinstance(blockName, str):
                 self.bandMap[band] = self.lpifData.processingBlocks[blockName]
