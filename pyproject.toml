@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lpif2dbxdriverack"
-version = "0.0.2"
+version = "0.0.3"
 authors = [{ name = "Matt Kupferman", email = "matt@kupferman.net" }]
 maintainers = [{ name = "Matt Kupferman", email = "matt@kupferman.net" }]
 description = "Sends compatible Loudspeaker Processor Interchange Format (LPIF) file parameters to supported dbx DriveRack loudspeaker management systems"
@@ -18,7 +18,7 @@ classifiers = [
     "Intended Audience :: End Users/Desktop",
     "Development Status :: 4 - Beta",
 ]
-dependencies = ["dbxdriverack", "prompt_toolkit", "Click"]
+dependencies = ["dbxdriverack>=0.0.3", "prompt_toolkit", "Click"]
 
 [tool.setuptools.package-data]
 "lpif2dbxdriverack" = ["py.typed"]

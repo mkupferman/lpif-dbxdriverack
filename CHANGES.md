@@ -1,5 +1,9 @@
 # Release Notes
 
+## 0.0.3
+
+* Bug fix release
+
 ## 0.0.2
 
 * Default behavior is to mute all outputs before applying changes.
